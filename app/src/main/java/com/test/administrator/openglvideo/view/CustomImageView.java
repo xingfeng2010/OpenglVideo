@@ -95,17 +95,23 @@ public class CustomImageView extends ImageView implements ViewTreeObserver.OnGlo
                 if (isAutoScale) return true;
                 if (getScale() < mMidScale) {
                     mMyAnim.setStartState(mMatrix);
-                    mMatrix.postScale(mMidScale / getScale(), mMidScale / getScale(), x, y);
+                    mMyAnim.setStartScal(getScale());
+                    mMyAnim.setEndScal(mMidScale);
+                    mMyAnim.setCenter(x, y);
+//                    mMatrix.postScale(mMidScale / getScale(), mMidScale / getScale(), x, y);
 //                    setImageMatrix(mMatrix);
 //                    postDelayed(new AutoScalerunnable(mMidScale, x, y), 16);
 //                    isAutoScale = true;
-                    mMyAnim.setEndState(mMatrix);
+                    //mMyAnim.setEndState(mMatrix);
                     CustomImageView.this.startAnimation(mMyAnim);
                     Log.i("DEBUG_TEST", "anim start!!");
                 } else {
                     mMyAnim.setStartState(mMatrix);
-                    mMatrix.postScale(mInitScale / getScale(), mInitScale / getScale(), x, y);
-                    mMyAnim.setEndState(mTempMatrix);
+                    mMyAnim.setStartScal(getScale());
+                    mMyAnim.setEndScal(mInitScale);
+                    mMyAnim.setCenter(x, y);
+//                    mMatrix.postScale(mInitScale / getScale(), mInitScale / getScale(), x, y);
+//                    mMyAnim.setEndState(mTempMatrix);
                     CustomImageView.this.startAnimation(mMyAnim);
                     Log.i("DEBUG_TEST", "anim start!!");
 //                    setImageMatrix(mMatrix);
@@ -149,7 +155,7 @@ public class CustomImageView extends ImageView implements ViewTreeObserver.OnGlo
         @Override
         public void run() {
             mMatrix.postScale(tmpScale, tmpScale, x, y);
-            checkBorderAndCenterWhenScale(false);
+            checkBorderAndCenterWhenScale();
             setImageMatrix(mMatrix);
 
             float currentScale = getScale();
@@ -159,7 +165,7 @@ public class CustomImageView extends ImageView implements ViewTreeObserver.OnGlo
             } else {
                 float scale = targetScale / currentScale;
                 mMatrix.postScale(scale, scale, x, y);
-                checkBorderAndCenterWhenScale(false);
+                checkBorderAndCenterWhenScale();
                 setImageMatrix(mMatrix);
                 isAutoScale = false;
             }
@@ -281,7 +287,7 @@ public class CustomImageView extends ImageView implements ViewTreeObserver.OnGlo
                         }
 
                         mMatrix.postTranslate(dx, dy);
-                        checkBorderAndCenterWhenScale(false);
+                        checkBorderAndCenterWhenScale();
                         setImageMatrix(mMatrix);
                     }
                 }
@@ -307,7 +313,7 @@ public class CustomImageView extends ImageView implements ViewTreeObserver.OnGlo
     /**
      * 获得当前的缩放比例
      */
-    private float getScale() {
+    public float getScale() {
         float[] value = new float[9];
         mMatrix.getValues(value);
         return value[Matrix.MSCALE_X];
@@ -341,7 +347,7 @@ public class CustomImageView extends ImageView implements ViewTreeObserver.OnGlo
 
             mMatrix.postScale(factor, factor, dx, dy);
 
-            checkBorderAndCenterWhenScale(false);
+            checkBorderAndCenterWhenScale();
 
             setImageMatrix(mMatrix);
         }
@@ -351,7 +357,7 @@ public class CustomImageView extends ImageView implements ViewTreeObserver.OnGlo
     /**
      * 在缩放的时候进行边界的和位置的控制
      */
-    public void checkBorderAndCenterWhenScale(boolean foranim) {
+    public void checkBorderAndCenterWhenScale() {
         RectF rectF = getMatrixRectF();
         float deltaX = 0;
         float deltaY = 0;
@@ -389,9 +395,7 @@ public class CustomImageView extends ImageView implements ViewTreeObserver.OnGlo
             deltaY = height / 2f - rectF.bottom + rectF.height() / 2f;
         }
         mMatrix.postTranslate(deltaX, deltaY);
-        if (!foranim) {
-            setImageMatrix(mMatrix);
-        }
+        setImageMatrix(mMatrix);
     }
 
     /**
@@ -417,5 +421,9 @@ public class CustomImageView extends ImageView implements ViewTreeObserver.OnGlo
     @Override
     public void onScaleEnd(ScaleGestureDetector detector) {
 
+    }
+
+    public Matrix getMatrix() {
+        return mMatrix;
     }
 }
