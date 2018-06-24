@@ -20,12 +20,4 @@
         android:focusable="true"
         android:clickable="true"
         android:src="@drawable/timg"/>
-
-    <!--<com.github.chrisbanes.photoview.PhotoView-->
-        <!--android:id="@+id/carmer_view"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:focusable="true"-->
-        <!--android:clickable="true"-->
-        <!--android:src="@drawable/timg"/>-->
 </android.support.constraint.ConstraintLayout>
