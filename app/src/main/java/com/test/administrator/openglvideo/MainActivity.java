@@ -7,7 +7,7 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
-import com.test.administrator.openglvideo.render.PicFilterRerder;
+import com.test.administrator.openglvideo.render.MapRender;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -19,8 +19,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-       // showSurfaceView();
-       setContentView(R.layout.activity_main);
+       showSurfaceView();
+       //setContentView(R.layout.activity_main);
     }
 
     @Override
@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
         boolean supportES2 = info.reqGlEsVersion >= 0x20000;
         if (supportES2) {
             mGLSurfaceView.setEGLContextClientVersion(2);
-            mGLSurfaceView.setRenderer(new PicFilterRerder(this));
+            mGLSurfaceView.setRenderer(new MapRender(this));
 
             bRenderSet = true;
         } else {
