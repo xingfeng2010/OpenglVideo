@@ -17,11 +17,20 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    repositories {
+        flatDir {
+            dirs 'libs'
+        }
+    }
 }
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:appcompat-v7:27.1.1'
     compile 'com.android.support.constraint:constraint-layout:1.1.2'
+    compile 'com.android.support:design:27.1.1'
     testCompile 'junit:junit:4.12'
+//    compile(name: 'lib_link_lightcar-release', ext: 'aar')
+//    compile(name: 'vkeytools-debug', ext: 'aar')
 }
