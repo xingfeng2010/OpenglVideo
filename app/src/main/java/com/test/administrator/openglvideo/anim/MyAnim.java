@@ -19,6 +19,7 @@ public class MyAnim extends Animation implements Animation.AnimationListener {
 
     private final float[] mAnimMatrix = new float[9];
 
+<<<<<<< HEAD
     private float mStartZoom,mEndZoom,mCenterX,mCenterY;
 
     public MyAnim(CustomImageView cropImageView,float startZoom, float endZoom,
@@ -35,6 +36,13 @@ public class MyAnim extends Animation implements Animation.AnimationListener {
         setInterpolator(new AccelerateDecelerateInterpolator());
         setAnimationListener(this);
     }
+=======
+    private float mStartScale;
+    private float mEndScale;
+    private float mScalx;
+    private float mScaly;
+    // endregion
+>>>>>>> fd6c9744558f9019957d90cdb7ededfd2b2d0bc6
 
     public MyAnim(CustomImageView cropImageView) {
         mImageView = cropImageView;
@@ -58,8 +66,32 @@ public class MyAnim extends Animation implements Animation.AnimationListener {
         imageMatrix.getValues(mEndImageMatrix);
     }
 
+    public void setStartScal(float scale) {
+        mStartScale = scale;
+    }
+
+    public void setEndScal(float scale) {
+        mEndScale = scale;
+    }
+
+//    @Override
+//    protected void applyTransformation(float interpolatedTime, Transformation t) {
+//        Log.i("DEBUG_TEST", "applyTransformation interpolatedTime:" + interpolatedTime);
+//        for (int i = 0; i < mAnimMatrix.length; i++) {
+//            mAnimMatrix[i] =
+//                    mStartImageMatrix[i] + (mEndImageMatrix[i] - mStartImageMatrix[i]) * interpolatedTime;
+//        }
+//        Matrix m = mImageView.getImageMatrix();
+//        m.setValues(mAnimMatrix);
+//        mImageView.setImageMatrix(m);
+//       // mImageView.checkBorderAndCenterWhenScale(false);
+//
+//        mImageView.invalidate();
+//    }
+
     @Override
     protected void applyTransformation(float interpolatedTime, Transformation t) {
+<<<<<<< HEAD
         mImageView.checkBorderAndCenterWhenScale();
 //        for (int i = 0; i < mAnimMatrix.length; i++) {
 //            mAnimMatrix[i] =
@@ -76,15 +108,29 @@ public class MyAnim extends Animation implements Animation.AnimationListener {
         Matrix m = mImageView.getMyMatrix();
         m.postScale(destScale,destScale,mCenterX,mCenterY);
         mImageView.setImageMatrix(m);
+=======
+        Log.i("DEBUG_TEST", "applyTransformation interpolatedTime:" + interpolatedTime);
+        float tempScal = mStartScale + (mEndScale - mStartScale) * interpolatedTime;
+        Matrix m = mImageView.getMatrix();
+        float scale = tempScal / mImageView.getScale();
+        m.postScale(scale, scale, mScalx, mScaly);
+        mImageView.setImageMatrix(m);
+        mImageView.checkBorderAndCenterWhenScale();
+>>>>>>> fd6c9744558f9019957d90cdb7ededfd2b2d0bc6
 
         mImageView.invalidate();
     }
 
     @Override
-    public void onAnimationStart(Animation animation) {}
+    public void onAnimationStart(Animation animation) {
+    }
 
     @Override
     public void onAnimationEnd(Animation animation) {
+        Matrix m = mImageView.getMatrix();
+        float scale = mEndScale / mImageView.getScale();
+        m.postScale(scale, scale, mScalx, mScaly);
+        mImageView.setImageMatrix(m);
         mImageView.clearAnimation();
         float scale = mEndZoom / mImageView.getScale();
         Matrix m = mImageView.getMyMatrix();
@@ -96,5 +142,11 @@ public class MyAnim extends Animation implements Animation.AnimationListener {
     }
 
     @Override
-    public void onAnimationRepeat(Animation animation) {}
+    public void onAnimationRepeat(Animation animation) {
+    }
+
+    public void setCenter(float x, float y) {
+        mScalx = x;
+        mScaly = y;
+    }
 }

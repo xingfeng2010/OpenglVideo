@@ -7,48 +7,26 @@ import android.media.MediaCodec;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
-import android.view.Choreographer;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.Toast;
 
+import com.test.administrator.openglvideo.media.VideoEncoderCore;
 import com.test.administrator.openglvideo.util.MiscUtils;
 
 import java.io.File;
 import java.nio.ByteBuffer;
 
-public class VideoActivity extends Activity implements TextureView.SurfaceTextureListener{
-    public static final String TAG = "VideoActivity";
+public class VideoEncodeActivity extends Activity implements TextureView.SurfaceTextureListener{
+    public static final String TAG = "VideoEncodeActivity";
     private TextureView mTextureView;
     private boolean bTextureAvailabe;
-    private FrameCallback mFrameCallback;
-
-    /**
-     * Callback invoked when rendering video frames.  The MoviePlayer client must
-     * provide one of these.
-     */
-    public interface FrameCallback {
-        /**
-         * Called immediately before the frame is rendered.
-         * @param presentationTimeUsec The desired presentation time, in microseconds.
-         */
-        void preRender(long presentationTimeUsec);
-
-        /**
-         * Called immediately after the frame render call returns.  The frame may not have
-         * actually been rendered yet.
-         * TODO: is this actually useful?
-         */
-        void postRender();
-
-        /**
-         * Called after the last frame of a looped movie has been rendered.  This allows the
-         * callback to adjust its expectations of the next presentation time stamp.
-         */
-        void loopReset();
-    }
+    private VideoActivity.FrameCallback mFrameCallback;
+    private static final String PATH = Environment.getExternalStorageDirectory().toString() + "/DCIM/Camera";
+    private VideoEncoderCore mVideoEncoderCore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,20 +113,26 @@ public class VideoActivity extends Activity implements TextureView.SurfaceTextur
         Surface surface = new Surface(texture);
 
         try {
-            String[] fileds = MiscUtils.getFiles(getFilesDir(), "*.mp4");
-            String path = new File(getFilesDir(), fileds[0]).toString();
+            String[] fileds = MiscUtils.getFiles(new File(PATH), "*.mp4");
+            String path = new File(PATH, fileds[0]).toString();
             MediaExtractor extractor = new MediaExtractor();
             extractor.setDataSource(path);
             int trackIndex = selectTrackIndex(extractor);
             extractor.selectTrack(trackIndex);
             MediaFormat format = extractor.getTrackFormat(trackIndex);
-           // adjustAspectRatio(format.getInteger(MediaFormat.KEY_WIDTH), format.getInteger(MediaFormat.KEY_HEIGHT));
-        } catch (Exception e) {
+            Log.i(TAG,"start play format :" + format);
 
+            int width = format.getInteger(MediaFormat.KEY_WIDTH);
+            int height = format.getInteger(MediaFormat.KEY_HEIGHT);
+            adjustAspectRatio(width, height);
+
+            mVideoEncoderCore = new VideoEncoderCore(1280, 720, 1000000, new File(PATH, "test.mp4"));
+        } catch (Exception e) {
+          Log.i(TAG,"start play exception :" + e);
         }
 
 
-        PlayTask task = new PlayTask(surface,getFilesDir(),mTextureView, mFrameCallback);
+        PlayTask task = new PlayTask(surface,new File(PATH),mTextureView, mFrameCallback, mVideoEncoderCore);
         new Thread(task, "Movei player").start();
     }
 
@@ -159,15 +143,17 @@ public class VideoActivity extends Activity implements TextureView.SurfaceTextur
         private TextureView textureView;
         private String[] mMovieFiles;
         private String path;
-        private FrameCallback mFrameCallback;
+        private VideoActivity.FrameCallback mFrameCallback;
+        private VideoEncoderCore videoEncoder;
 
-        public PlayTask(Surface surface, File filesDir, TextureView view, FrameCallback frameCallback) {
-            mSurface = surface;
+        public PlayTask(Surface surface, File filesDir, TextureView view, VideoActivity.FrameCallback frameCallback, VideoEncoderCore encode) {
+            mSurface = encode.getInputSurface();
             mSourceFile = filesDir;
             textureView = view;
             mMovieFiles = MiscUtils.getFiles(mSourceFile, "*.mp4");
             path = new File(filesDir, mMovieFiles[0]).toString();
             mFrameCallback = frameCallback;
+            videoEncoder = encode;
         }
 
         @Override
@@ -187,7 +173,7 @@ public class VideoActivity extends Activity implements TextureView.SurfaceTextur
                 decoder.configure(format, mSurface, null, 0);
                 decoder.start();
 
-               // adjustAspectRatio(format.getInteger(MediaFormat.KEY_WIDTH), format.getInteger(MediaFormat.KEY_HEIGHT));
+                // adjustAspectRatio(format.getInteger(MediaFormat.KEY_WIDTH), format.getInteger(MediaFormat.KEY_HEIGHT));
 
                 doExtract(extractor, trackIndex, decoder);
             } catch (Exception e) {
@@ -267,6 +253,8 @@ public class VideoActivity extends Activity implements TextureView.SurfaceTextur
                         if (doRender && mFrameCallback != null) {
                             mFrameCallback.postRender();
                         }
+
+                        videoEncoder.drainEncoder(outputDone);
                     }
                 }
             }

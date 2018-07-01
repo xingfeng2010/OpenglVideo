@@ -96,22 +96,26 @@ public class CustomImageView extends ImageView implements ViewTreeObserver.OnGlo
                 Log.i("DEBUG_TEST"," mMidScale:" + mMidScale);
                 Log.i("DEBUG_TEST"," mCurrentScal:" + getScale());
                 if (getScale() < mMidScale) {
-//                    mMyAnim.setStartState(mMatrix);
+                    mMyAnim.setStartState(mMatrix);
+                    mMyAnim.setStartScal(getScale());
+                    mMyAnim.setEndScal(mMidScale);
+                    mMyAnim.setCenter(x, y);
 //                    mMatrix.postScale(mMidScale / getScale(), mMidScale / getScale(), x, y);
 //                    setImageMatrix(mMatrix);
 //                    postDelayed(new AutoScalerunnable(mMidScale, x, y), 16);
 //                    isAutoScale = true;
-//                    mMyAnim.setEndState(mMatrix);
-//                    CustomImageView.this.startAnimation(mMyAnim);
-//                    Log.i("DEBUG_TEST", "anim start!!");
-                    MyAnim anim = new MyAnim(CustomImageView.this, getScale(),mMidScale, x, y);
-                    CustomImageView.this.startAnimation(anim);
+                    //mMyAnim.setEndState(mMatrix);
+                    CustomImageView.this.startAnimation(mMyAnim);
+                    Log.i("DEBUG_TEST", "anim start!!");
                 } else {
-//                    mMyAnim.setStartState(mMatrix);
+                    mMyAnim.setStartState(mMatrix);Ï
+                    mMyAnim.setStartScal(getScale());
+                    mMyAnim.setEndScal(mInitScale);
+                    mMyAnim.setCenter(x, y);
 //                    mMatrix.postScale(mInitScale / getScale(), mInitScale / getScale(), x, y);
 //                    mMyAnim.setEndState(mTempMatrix);
-//                    CustomImageView.this.startAnimation(mMyAnim);
-//                    Log.i("DEBUG_TEST", "anim start!!");
+                    CustomImageView.this.startAnimation(mMyAnim);
+                    Log.i("DEBUG_TEST", "anim start!!");
 //                    setImageMatrix(mMatrix);
 //                    postDelayed(new AutoScalerunnable(mInitScale, x, y), 16);
 //                    isAutoScale = true;
@@ -423,7 +427,7 @@ public class CustomImageView extends ImageView implements ViewTreeObserver.OnGlo
 
     }
 
-    public Matrix getMyMatrix() {
+    public Matrix getMatrix() {
         return mMatrix;
     }
 }
