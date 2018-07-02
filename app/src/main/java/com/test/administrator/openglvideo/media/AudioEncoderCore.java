@@ -1,23 +1,8 @@
-/*
- * Copyright 2014 Google Inc. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.test.administrator.openglvideo.media;
 
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
+import android.media.MediaCrypto;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
 import android.util.Log;
@@ -25,21 +10,10 @@ import android.view.Surface;
 
 import com.test.administrator.openglvideo.VideoEncodeActivity;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-/**
- * This class wraps up the core components used for surface-input video encoding.
- * <p>
- * Once created, frames are fed to the input surface.  Remember to provide the presentation
- * time stamp, and always call drainEncoder() before swapBuffers() to ensure that the
- * producer side doesn't get backed up.
- * <p>
- * This class is not thread-safe, with one exception: it is valid to use the input surface
- * on one thread, and drain the output on a different thread.
- */
-public class VideoEncoderCore {
+public class AudioEncoderCore {
     private static final String TAG = VideoEncodeActivity.TAG;
     private static final boolean VERBOSE = false;
 
@@ -59,45 +33,48 @@ public class VideoEncoderCore {
     /**
      * Configures encoder and muxer state, and prepares the input Surface.
      */
-    public VideoEncoderCore(int width, int height, int bitRate, MediaMuxerWrapper muxer)
-            throws IOException {
+    public AudioEncoderCore(int sample, int channel, String audiomime, MediaMuxerWrapper mediaMuxer) throws IOException {
         mBufferInfo = new MediaCodec.BufferInfo();
 
-        MediaFormat format = MediaFormat.createVideoFormat(MIME_TYPE, width, height);
-
-        // Set some properties.  Failing to specify some of these can cause the MediaCodec
-        // configure() call to throw an unhelpful exception.
-        format.setInteger(MediaFormat.KEY_COLOR_FORMAT,
-                MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
-        format.setInteger(MediaFormat.KEY_BIT_RATE, bitRate);
-        format.setInteger(MediaFormat.KEY_FRAME_RATE, FRAME_RATE);
-        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, IFRAME_INTERVAL);
-        Log.d(TAG, "format: " + format);
-
-        // Create a MediaCodec encoder, and configure it with our format.  Get a Surface
-        // we can use for input and wrap it with a class that handles the EGL work.
-        mEncoder = MediaCodec.createEncoderByType(MIME_TYPE);
-        mEncoder.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
-        mInputSurface = mEncoder.createInputSurface();
+        MediaFormat audioFormat = MediaFormat.createAudioFormat(audiomime, sample, channel);
+        audioFormat.setInteger("aac-profile", MediaCodecInfo.CodecProfileLevel.AACObjectLC);
+        audioFormat.setInteger("channel-mask", 16);
+        audioFormat.setInteger("bitrate", 64 * 1024);
+        audioFormat.setInteger("channel-count", 2);
+        Log.i(TAG, "AudioEncoderCore format");
+        mEncoder = MediaCodec.createEncoderByType("audio/mp4a-latm");
+        Log.i(TAG, "AudioEncoderCore audioFormat:" + audioFormat.toString());
+        mEncoder.configure(audioFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
+        Log.i(TAG, "AudioEncoderCore createInputSurface");
+//        mInputSurface = mEncoder.createInputSurface();
         mEncoder.start();
-
-        // Create a MediaMuxer.  We can't add the video track and start() the muxer here,
-        // because our MediaFormat doesn't have the Magic Goodies.  These can only be
-        // obtained from the encoder after it has started processing data.
-        //
-        // We're not actually interested in multiplexing audio.  We just want to convert
-        // the raw H.264 elementary stream we get from MediaCodec into a .mp4 file.
-        mMuxer = muxer;
+        mMuxer = mediaMuxer;
 
         mTrackIndex = -1;
         mMuxerStarted = false;
     }
 
-    /**
-     * Returns the encoder's input surface.
-     */
-    public Surface getInputSurface() {
-        return mInputSurface;
+    public void encode(ByteBuffer buffer, int length, long presentationTimeUs) {
+        Log.i(TAG,"AudioEncoderCore encode buffer:" + buffer + " length:" + length);
+        int inutindex = mEncoder.dequeueInputBuffer(1000);
+        Log.i(TAG,"AudioEncoderCore encode inutindex:" + inutindex);
+        if (inutindex > 0) {
+            ByteBuffer inputBuffer = mEncoder.getInputBuffer(inutindex);
+            Log.i(TAG,"AudioEncoderCore encode inputBuffer:" + inputBuffer);
+            inputBuffer.clear();
+            Log.i(TAG,"AudioEncoderCore encode after clear:");
+            if (buffer != null) {
+                inputBuffer.put(buffer);
+            }
+
+            Log.i(TAG,"AudioEncoderCore encode after put:");
+
+            if (length <= 0) {
+                mEncoder.queueInputBuffer(inutindex, 0, 0, presentationTimeUs, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
+            } else {
+                mEncoder.queueInputBuffer(inutindex, 0, length, presentationTimeUs, 0);
+            }
+        }
     }
 
     /**
@@ -129,13 +106,12 @@ public class VideoEncoderCore {
      * We're just using the muxer to get a .mp4 file (instead of a raw H.264 stream).  We're
      * not recording audio.
      */
-    public boolean drainEncoder(boolean endOfStream) {
-        boolean trackAdd = false;
+    public void drainEncoder(boolean endOfStream) {
         final int TIMEOUT_USEC = 10000;
-        Log.d(TAG, "drainEncoder(" + endOfStream + ")");
+        Log.d(TAG, "AudioEncoderCore drainEncoder(" + endOfStream + ")");
 
         if (endOfStream) {
-            Log.d(TAG, "sending EOS to encoder");
+            Log.d(TAG, "AudioEncoderCore sending EOS to encoder");
             mEncoder.signalEndOfInputStream();
         }
 
@@ -147,7 +123,7 @@ public class VideoEncoderCore {
                 if (!endOfStream) {
                     break;      // out of while
                 } else {
-                    Log.d(TAG, "no output available, spinning to await EOS");
+                    Log.d(TAG, "AudioEncoderCore no output available, spinning to await EOS");
                 }
             } else if (encoderStatus == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
                 // not expected for an encoder
@@ -158,15 +134,14 @@ public class VideoEncoderCore {
                     throw new RuntimeException("format changed twice");
                 }
                 MediaFormat newFormat = mEncoder.getOutputFormat();
-                Log.d(TAG, "encoder output format changed: " + newFormat);
+                Log.d(TAG, "AudioEncoderCore encoder output format changed: " + newFormat);
 
                 // now that we have the Magic Goodies, start the muxer
                 mTrackIndex = mMuxer.addTrack(newFormat);
                 mMuxer.start();
                 mMuxerStarted = true;
-                trackAdd = true;
             } else if (encoderStatus < 0) {
-                Log.w(TAG, "unexpected result from encoder.dequeueOutputBuffer: " +
+                Log.w(TAG, "AudioEncoderCore unexpected result from encoder.dequeueOutputBuffer: " +
                         encoderStatus);
                 // let's ignore it
             } else {
@@ -179,7 +154,7 @@ public class VideoEncoderCore {
                 if ((mBufferInfo.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0) {
                     // The codec config data was pulled out and fed to the muxer when we got
                     // the INFO_OUTPUT_FORMAT_CHANGED status.  Ignore it.
-                    Log.d(TAG, "ignoring BUFFER_FLAG_CODEC_CONFIG");
+                    Log.d(TAG, "AudioEncoderCore ignoring BUFFER_FLAG_CODEC_CONFIG");
                     mBufferInfo.size = 0;
                 }
 
@@ -203,15 +178,13 @@ public class VideoEncoderCore {
 
                 if ((mBufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
                     if (!endOfStream) {
-                        Log.w(TAG, "reached end of stream unexpectedly");
+                        Log.w(TAG, "AudioEncoderCore reached end of stream unexpectedly");
                     } else {
-                        Log.d(TAG, "end of stream reached");
+                        Log.d(TAG, "AudioEncoderCore end of stream reached");
                     }
                     break;      // out of while
                 }
             }
         }
-
-        return trackAdd;
     }
 }
