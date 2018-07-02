@@ -108,7 +108,7 @@ public class CustomImageView extends ImageView implements ViewTreeObserver.OnGlo
                     CustomImageView.this.startAnimation(mMyAnim);
                     Log.i("DEBUG_TEST", "anim start!!");
                 } else {
-                    mMyAnim.setStartState(mMatrix);Ï
+                    mMyAnim.setStartState(mMatrix);
                     mMyAnim.setStartScal(getScale());
                     mMyAnim.setEndScal(mInitScale);
                     mMyAnim.setCenter(x, y);
@@ -119,8 +119,6 @@ public class CustomImageView extends ImageView implements ViewTreeObserver.OnGlo
 //                    setImageMatrix(mMatrix);
 //                    postDelayed(new AutoScalerunnable(mInitScale, x, y), 16);
 //                    isAutoScale = true;
-                    MyAnim anim = new MyAnim(CustomImageView.this, getScale(),mInitScale, x, y);
-                    CustomImageView.this.startAnimation(anim);
                 }
                 return true;
             }
