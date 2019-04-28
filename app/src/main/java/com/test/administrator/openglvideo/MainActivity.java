@@ -10,6 +10,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
+import com.test.administrator.openglvideo.render.CameraRender;
+import com.test.administrator.openglvideo.render.EasyVideoRender;
 import com.test.administrator.openglvideo.render.MapRender;
 import com.test.administrator.openglvideo.render.VideoRender;
 
@@ -23,8 +25,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-       //showSurfaceView();
-       setContentView(R.layout.activity_main);
+       showSurfaceView();
+       //setContentView(R.layout.activity_main);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (PackageManager.PERMISSION_GRANTED == this.checkSelfPermission(Manifest.permission.CAMERA)) {
@@ -52,7 +54,9 @@ public class MainActivity extends AppCompatActivity {
         if (supportES2) {
             mGLSurfaceView.setEGLContextClientVersion(2);
            // mGLSurfaceView.setRenderer(new MapRender(this));
-            mGLSurfaceView.setRenderer(new VideoRender(mGLSurfaceView, this));
+           // mGLSurfaceView.setRenderer(new VideoRender(mGLSurfaceView, this));
+           // mGLSurfaceView.setRenderer(new CameraRender(this, mGLSurfaceView));
+            mGLSurfaceView.setRenderer(new EasyVideoRender(this, mGLSurfaceView));
 
             bRenderSet = true;
         } else {

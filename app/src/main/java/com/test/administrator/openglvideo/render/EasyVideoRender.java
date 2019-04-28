@@ -3,8 +3,10 @@ package com.test.administrator.openglvideo.render;
 import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.media.MediaPlayer;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.view.Surface;
 
 import com.test.administrator.openglvideo.R;
 import com.test.administrator.openglvideo.util.ShaderHelper;
@@ -17,7 +19,7 @@ import java.nio.FloatBuffer;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-public class CameraRender implements GLSurfaceView.Renderer {
+public class EasyVideoRender implements GLSurfaceView.Renderer {
     private static final float[] VERTEX = {
             -1.0f, 1.0f, 0.0f,
             -1.0f, -1.0f, 0.0f,
@@ -38,7 +40,7 @@ public class CameraRender implements GLSurfaceView.Renderer {
 
     private static final int STRIDE = (POSITION_COMPONENT_COUNT + TEXTURE_COMPONENT_COUNT) * BYTES_PER_FLOAT;
 
-
+    public String videoPath = "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4";
     private FloatBuffer mVertexBuffer;
     private Context mContext;
     private int mProgram;
@@ -52,7 +54,7 @@ public class CameraRender implements GLSurfaceView.Renderer {
 
     private FloatBuffer mTextureVertexBuffer;
     private SurfaceTexture mSurfaceTexture;
-    private Camera mCamera;
+    private MediaPlayer mMediaPlayer;
     private GLSurfaceView mGLSurfaceView;
 
     private SurfaceTexture.OnFrameAvailableListener mOnFrameAvailableListener = new SurfaceTexture.OnFrameAvailableListener() {
@@ -62,7 +64,7 @@ public class CameraRender implements GLSurfaceView.Renderer {
         }
     };
 
-    public CameraRender(Context context, GLSurfaceView view) {
+    public EasyVideoRender(Context context, GLSurfaceView view) {
         mGLSurfaceView = view;
         mContext = context;
         initPositionData();
@@ -86,14 +88,24 @@ public class CameraRender implements GLSurfaceView.Renderer {
     }
 
     private void openCamera() {
-        try {
-            mCamera = Camera.open();
-            mCamera.setPreviewTexture(mSurfaceTexture);
-            mCamera.startPreview();
-        } catch (Exception e) {
+        if (mMediaPlayer == null) {
+            mMediaPlayer = new MediaPlayer();
+            mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+                    mMediaPlayer.start();
+                }
+            });
+            mMediaPlayer.setSurface(new Surface(mSurfaceTexture));
+            try {
+                mMediaPlayer.setDataSource(videoPath);
+                mMediaPlayer.prepareAsync();
+            } catch (Exception e) {
 
+            }
+        } else {
+            mMediaPlayer.start();
         }
-
     }
 
     @Override
@@ -102,7 +114,7 @@ public class CameraRender implements GLSurfaceView.Renderer {
         GLES20.glUseProgram(mProgram);
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4);
 
-        if (mSurfaceTexture!= null) {
+        if (mSurfaceTexture != null) {
             mSurfaceTexture.updateTexImage();
         }
     }

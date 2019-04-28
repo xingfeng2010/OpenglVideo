@@ -21,7 +21,11 @@
         <!--android:clickable="true"-->
         <!--android:src="@drawable/timg"/>-->
 
-    <com.test.administrator.openglvideo.view.CameraSurfaceView
+    <!--<com.test.administrator.openglvideo.view.CameraSurfaceView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent" />-->
+
+    <com.test.administrator.openglvideo.view.CameraTextureView
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 </android.support.constraint.ConstraintLayout>
