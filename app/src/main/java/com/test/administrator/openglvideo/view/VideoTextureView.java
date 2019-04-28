@@ -11,7 +11,7 @@ import android.view.TextureView;
 public class VideoTextureView extends TextureView implements TextureView.SurfaceTextureListener {
     Context mContext;
     private MediaPlayer mediaPlayer;
-    private String URL = "http://www.androidbook.com/akc/filestorage/android/documentfiles/3389/movie.mp4";
+    private String URL = "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4";
     public VideoTextureView(Context context) {
         this(context, null);
     }

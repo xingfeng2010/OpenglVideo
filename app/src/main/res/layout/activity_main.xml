@@ -12,12 +12,16 @@
     <!--android:layout_width="match_parent"-->
     <!--android:layout_height="match_parent"/>-->
 
-    <com.test.administrator.openglvideo.view.CustomImageView
-        android:id="@+id/carmer_view"
+    <!--<com.test.administrator.openglvideo.view.CustomImageView-->
+        <!--android:id="@+id/carmer_view"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:scaleType="matrix"-->
+        <!--android:focusable="true"-->
+        <!--android:clickable="true"-->
+        <!--android:src="@drawable/timg"/>-->
+
+    <com.test.administrator.openglvideo.view.CameraSurfaceView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="matrix"
-        android:focusable="true"
-        android:clickable="true"
-        android:src="@drawable/timg"/>
+        android:layout_height="match_parent" />
 </android.support.constraint.ConstraintLayout>

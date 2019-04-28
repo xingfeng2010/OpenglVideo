@@ -8,7 +8,8 @@ import android.view.SurfaceView;
 
 import java.io.IOException;
 
-public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Callback {
+public class
+CameraSurfaceView extends SurfaceView implements SurfaceHolder.Callback {
     private SurfaceHolder mSurfaceHolder;
     private Camera mCamera;
 
