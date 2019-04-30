@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
+import com.test.administrator.openglvideo.render.MyLearnRerder;
 import com.test.administrator.openglvideo.render.SimpleRerder;
 
 
@@ -57,7 +58,8 @@ public class MainActivity extends AppCompatActivity {
            // mGLSurfaceView.setRenderer(new CustomRerder(this));
            // mGLSurfaceView.setRenderer(new PicFilterRerder(this));
             //mGLSurfaceView.setRenderer(new EmbossRerder(this));
-            mGLSurfaceView.setRenderer(new SimpleRerder(this));
+           // mGLSurfaceView.setRenderer(new SimpleRerder(this));
+            mGLSurfaceView.setRenderer(new MyLearnRerder(this));
 
             bRenderSet = true;
         } else {
