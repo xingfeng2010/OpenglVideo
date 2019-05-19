@@ -130,12 +130,12 @@ public class VideoRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
     @Override
     public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
         initProgram();
-        mTimeTexture = MyTextureHelper.loadTexture(mContext, R.drawable.fengj);
-        initTexture();
+        //mTimeTexture = MyTextureHelper.loadTexture(mContext, R.drawable.fengj);
+//        initTexture();
         try {
-            initExtractor();
-            initDecoder(mDecoderSurface);
-            initEncoder();
+            //initExtractor();
+            initDecoder();
+            //initEncoder();
             startDecode();
         } catch (Exception e) {
             Log.i("DEBUG_TEST", " exception e:" + e);
@@ -153,14 +153,14 @@ public class VideoRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
         videoHeight = format.getInteger(MediaFormat.KEY_HEIGHT);
 
         MediaFormat videoFormat = MediaFormat.createVideoFormat(mime, videoWidth, videoHeight);
-        videoFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecProfileLevel.AACObjectLC);
+        //videoFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar);
         videoFormat.setInteger(MediaFormat.KEY_BIT_RATE, videoHeight * videoWidth * 5);
         videoFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 24);
         videoFormat.setInteger(MediaFormat.KEY_BIT_RATE, 8);
         videoFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1);
         try {
             encoder = MediaCodec.createEncoderByType(mime);
-
+            Log.i("DEBUG_TEST", " initEncoder mime:" + mime);
             Log.i("DEBUG_TEST", " initEncoder 000 e:");
             encoder.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
         } catch (Exception e) {
@@ -187,7 +187,7 @@ public class VideoRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
         GLES20.glGenTextures(1, textures, 0);
 
         mTexture = textures[0];
-        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, mTimeTexture);
+       // GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, mTexture);
 
         GLES20.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
         GLES20.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
@@ -197,12 +197,16 @@ public class VideoRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
 
         // Link the texture handler to surface texture
         mSurfaceTexture = new SurfaceTexture(mTexture);
-        mSurfaceTexture.setDefaultBufferSize(320, 240);
-        mSurfaceTexture.setOnFrameAvailableListener(this);
+        //mSurfaceTexture.setDefaultBufferSize(320, 240);
 
         // Create decoder surface
         mDecoderSurface = new Surface(mSurfaceTexture);
-        // mEglHelper.setSurface(mSurfaceTexture);
+        mEglHelper.setSurface(mSurfaceTexture);
+        boolean create = mEglHelper.createGLES(videoWidth,videoHeight);
+        if (!create) {
+            Log.i("DEBUG_TEST"," createGLES failed !!");
+        }
+        mSurfaceTexture.setOnFrameAvailableListener(this);
     }
 
     private boolean initExtractor() {
@@ -210,7 +214,7 @@ public class VideoRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
         try {
             extractor.setDataSource(videoPath);
         } catch (IOException e) {
-            return false;
+            e.printStackTrace();
         }
 
         // get video track
@@ -235,36 +239,36 @@ public class VideoRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
         return true;
     }
 
-    private boolean initDecoder(Surface surface) {
-        // get mimetype and format
-        MediaFormat format = extractor.getTrackFormat(tracknumb);
-        String mime = format.getString(MediaFormat.KEY_MIME);
-        videoWidth = format.getInteger(MediaFormat.KEY_WIDTH);
-        videoHeight = format.getInteger(MediaFormat.KEY_HEIGHT);
-//        boolean create = mEglHelper.createGLES(videoWidth,videoHeight);
-//        if (!create) {
-//            Log.i("DEBUG_TEST"," createGLES failed !!");
-//        }
+    private boolean initDecoder() throws IOException{
+        extractor = new MediaExtractor();
+        extractor.setDataSource(videoPath);
 
-        Log.i("DEBUG_TEST", " initDecoder createGLES");
+        int count = extractor.getTrackCount();
+        for (int i =0; i < count; i ++) {
+           MediaFormat format = extractor.getTrackFormat(i);
+           String mime = format.getString(MediaFormat.KEY_MIME);
+           if (mime.startsWith("video")) {
+               videoWidth = format.getInteger(MediaFormat.KEY_WIDTH);
+               videoHeight = format.getInteger(MediaFormat.KEY_HEIGHT);
+               decoder = MediaCodec.createDecoderByType(mime);
+               extractor.selectTrack(i);
 
-        try {
-            decoder = MediaCodec.createDecoderByType(mime);
-            Log.i("DEBUG_TEST", " createDecoderByType");
-            decoder.configure(format, surface, null, 0);
+               //initTexture();
 
-            mMediaMuxer = new MediaMuxer(mOutputPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
-            mVideoEncoderTrack = mMediaMuxer.addTrack(format);
-        } catch (Exception e) {
-            Log.i("DEBUG_TEST", " 111 exception e:" + e);
+               mTexture = mEglHelper.createTextureID();
+               mSurfaceTexture = new SurfaceTexture(mTexture);
+               mDecoderSurface = new Surface(mSurfaceTexture);
+               mSurfaceTexture.setOnFrameAvailableListener(this);
+
+               decoder.configure(format, mDecoderSurface, null, 0);
+
+               mEglHelper.setSurface(mSurfaceTexture);
+               mEglHelper.createGLES(videoWidth,videoHeight);
+
+               //decoder.start();
+               break;
+           }
         }
-
-        if (decoder == null) {
-            Log.e("DEBUG_TEST", "Can't find video info!");
-            return false;
-        }
-
-        //  decoder.start();
 
         return true;
     }
@@ -310,7 +314,7 @@ public class VideoRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
         GLES20.glViewport(0, 0, width, height);
         this.drawTexture();
         Log.i("lishixing", "videoEncodeStep onDrawFrame:");
-        videoEncodeStep(false);
+        //videoEncodeStep(false);
         mEglHelper.swapBuffers();
     }
 
@@ -320,7 +324,7 @@ public class VideoRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
         GLES20.glEnableVertexAttribArray(positionHandle);
         GLES20.glVertexAttribPointer(positionHandle, 2, GLES20.GL_FLOAT, false, 0, vertexBuffer);
 
-        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, mTimeTexture);
+        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, mTexture);
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glUniform1i(textureParamHandle, 0);
 
@@ -341,8 +345,8 @@ public class VideoRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
             @Override
             public void run() {
                 decoder.start();
-                encoder.start();
-                mMediaMuxer.start();
+//                encoder.start();
+//                mMediaMuxer.start();
                 // get buffers
                 // start getting buffer
                 BufferInfo info = new BufferInfo();
@@ -365,7 +369,7 @@ public class VideoRender implements GLSurfaceView.Renderer, SurfaceTexture.OnFra
 
                 decoder.stop();
                 decoder.release();
-                extractor.release();
+//                extractor.release();
 
 
             }

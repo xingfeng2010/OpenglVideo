@@ -10,8 +10,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
+import com.test.administrator.openglvideo.render.EasyVideoRender;
 import com.test.administrator.openglvideo.render.MyLearnRerder;
 import com.test.administrator.openglvideo.render.SimpleRerder;
+import com.test.administrator.openglvideo.render.VideoRender;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -52,14 +54,15 @@ public class MainActivity extends AppCompatActivity {
         if (supportES2) {
             mGLSurfaceView.setEGLContextClientVersion(2);
            // mGLSurfaceView.setRenderer(new MapRender(this));
-           // mGLSurfaceView.setRenderer(new VideoRender(mGLSurfaceView, this));
+            mGLSurfaceView.setRenderer(new VideoRender(mGLSurfaceView, this));
            // mGLSurfaceView.setRenderer(new CameraRender(this, mGLSurfaceView));
-           // mGLSurfaceView.setRenderer(new EasyVideoRender(this, mGLSurfaceView));
+//            mGLSurfaceView.setRenderer(new EasyVideoRender(this, mGLSurfaceView));
            // mGLSurfaceView.setRenderer(new CustomRerder(this));
            // mGLSurfaceView.setRenderer(new PicFilterRerder(this));
             //mGLSurfaceView.setRenderer(new EmbossRerder(this));
-           // mGLSurfaceView.setRenderer(new SimpleRerder(this));
-            mGLSurfaceView.setRenderer(new MyLearnRerder(this));
+           //mGLSurfaceView.setRenderer(new SimpleRerder(this));
+//            mGLSurfaceView.setRenderer(new MyLearnRerder(this));
+//            mGLSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 
             bRenderSet = true;
         } else {
