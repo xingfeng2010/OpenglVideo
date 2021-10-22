@@ -1,7 +1,6 @@
 package com.test.administrator.openglvideo.render;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +12,8 @@ import android.widget.TextView;
 
 import com.test.administrator.openglvideo.R;
 import com.test.administrator.openglvideo.RenderActivity;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class RenderListActivity extends AppCompatActivity implements AdapterView.OnItemClickListener{
     private ListView mListView;

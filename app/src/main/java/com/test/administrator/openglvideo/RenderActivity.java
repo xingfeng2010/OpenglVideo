@@ -8,7 +8,6 @@ import android.content.pm.PackageManager;
 import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 
 import com.test.administrator.openglvideo.render.CameraRender;
@@ -20,6 +19,8 @@ import com.test.administrator.openglvideo.render.MyLearnRerder;
 import com.test.administrator.openglvideo.render.PicFilterRerder;
 import com.test.administrator.openglvideo.render.SimpleRerder;
 import com.test.administrator.openglvideo.render.VideoRender;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class RenderActivity extends AppCompatActivity {
 

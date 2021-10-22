@@ -6,7 +6,6 @@ import android.media.MediaFormat;
 import android.media.MediaMuxer;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.test.administrator.openglvideo.util.MiscUtils;
@@ -15,9 +14,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 public class VideoCombineActivity extends AppCompatActivity {
     private static final String TAG = "VideoCombineActivity";
-    private static final String PATH = Environment.getExternalStorageDirectory().toString() + "/DCIM/Camera/";
+    private static final String PATH = Environment.getExternalStorageDirectory().toString() + "/combine/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

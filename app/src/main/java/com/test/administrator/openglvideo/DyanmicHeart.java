@@ -3,11 +3,12 @@ package com.test.administrator.openglvideo;
 import android.animation.Animator;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
 import android.view.ViewAnimationUtils;
 import android.view.animation.DecelerateInterpolator;
 
 import com.test.administrator.openglvideo.view.DynamicHeartView;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class DyanmicHeart extends AppCompatActivity {
     private DynamicHeartView dynamic_view;

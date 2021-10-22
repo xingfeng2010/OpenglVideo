@@ -1,7 +1,10 @@
 package com.test.administrator.openglvideo;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +15,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.test.administrator.openglvideo.render.RenderListActivity;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class StartUpActivity extends AppCompatActivity implements AdapterView.OnItemClickListener{
     private ListView mListView;
@@ -36,6 +41,21 @@ public class StartUpActivity extends AppCompatActivity implements AdapterView.On
         mListView.setOnItemClickListener(this);
 
         mLayoutInflator = LayoutInflater.from(this);
+
+        checkPermission(this);
+    }
+
+    public static boolean checkPermission(
+            Activity activity) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && activity.checkSelfPermission(
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            activity.requestPermissions(new String[]{
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+            }, 1);
+
+        }
+        return false;
     }
 
     @Override
