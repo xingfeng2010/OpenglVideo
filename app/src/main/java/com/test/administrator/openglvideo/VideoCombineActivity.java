@@ -4,9 +4,14 @@ import android.media.MediaCodec;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.MediaController;
+import android.widget.VideoView;
 
 import com.test.administrator.openglvideo.util.MiscUtils;
 
@@ -20,19 +25,56 @@ public class VideoCombineActivity extends AppCompatActivity {
     private static final String TAG = "VideoCombineActivity";
     private static final String PATH = Environment.getExternalStorageDirectory().toString() + "/combine/";
 
+    private VideoView mVideoView;
+    private String audioVideoPath;
+    private String frameVideoPath;
+    private String combinePath;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video_combine);
 
+        mVideoView = findViewById(R.id.video_view);
+        //设置视频控制器
+        mVideoView.setMediaController(new MediaController(this));
+
+        //String[] fileds = MiscUtils.getFiles(new File(PATH), "*.mp4");
+        audioVideoPath = new File(PATH, "input.mp4").getAbsolutePath();
+        frameVideoPath =new File(PATH, "gaosimohu.mp4").getAbsolutePath();
+        File file = new File(PATH, "combine.mp4");
+        combinePath = file.getAbsolutePath();
+        if(file.exists()) file.delete();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+
+        mVideoView.setVideoPath(frameVideoPath);
+        mVideoView.start();
+    }
+
+
+    public void startCombine(View view) {
         new Thread() {
 
             @Override
             public void run() {
-                String[] fileds = MiscUtils.getFiles(new File(PATH), "*.mp4");
-                String audioVideoPath = PATH + fileds[0];
-                String frameVideoPath = PATH + fileds[1];
-                combineTwoVideos(audioVideoPath, 0, frameVideoPath, new File(PATH, "combine.mp4"));
+                combineTwoVideos(frameVideoPath, 0, audioVideoPath, new File(PATH, "combine.mp4"));
+
+                mVideoView.stopPlayback();
+                mVideoView.setVideoPath(combinePath);
+                mVideoView.start();
+
+                mVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+                        mp.setLooping(true);
+                    }
+                });
             }
         }.start();
     }
@@ -161,4 +203,5 @@ public class VideoCombineActivity extends AppCompatActivity {
             }
         }
     }
+
 }
